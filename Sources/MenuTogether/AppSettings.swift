@@ -30,6 +30,7 @@ final class AppSettings {
 
     private enum Keys {
         static let isEnabled = "isEnabled"
+        static let launchAtLogin = "launchAtLogin"
         static let maxScreenPercentage = "maxScreenPercentage"
         static let verticalGap = "verticalGap"
         static let horizontalOffset = "horizontalOffset"
@@ -53,6 +54,7 @@ final class AppSettings {
     private func registerDefaults() {
         defaults.register(defaults: [
             Keys.isEnabled: true,
+            Keys.launchAtLogin: true,
             Keys.maxScreenPercentage: 80.0,
             Keys.verticalGap: 2.0,
             Keys.horizontalOffset: 0.0
@@ -102,6 +104,17 @@ final class AppSettings {
         }
         set {
             defaults.set(newValue, forKey: Keys.isEnabled)
+            notifyChange()
+        }
+    }
+
+    var launchAtLogin: Bool {
+        get {
+            defaults.synchronize()
+            return defaults.object(forKey: Keys.launchAtLogin) as? Bool ?? true
+        }
+        set {
+            defaults.set(newValue, forKey: Keys.launchAtLogin)
             notifyChange()
         }
     }

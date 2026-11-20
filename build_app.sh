@@ -60,7 +60,7 @@ cat > "${CONTENTS_DIR}/Info.plist" <<EOF
 EOF
 
 xattr -cr "${APP_BUNDLE}"
-codesign --force --deep --sign - "${APP_BUNDLE}"
+codesign --force --deep --sign - -r="designated => identifier \"com.dansorrel.MenuTogether\"" "${APP_BUNDLE}"
 echo "✅ ${APP_BUNDLE} gerado com sucesso!"
 
 # ---------------------------------------------------------
@@ -135,8 +135,48 @@ cp -R "${PANE_BUNDLE}" "${USER_PREFPANES_DIR}/${PANE_BUNDLE}"
 
 echo "✅ ${PANE_BUNDLE} compilado e instalado em ${USER_PREFPANES_DIR}/${PANE_BUNDLE}!"
 
-echo "3. Reiniciando ${APP_NAME} com a nova versão..."
+# ---------------------------------------------------------
+# 3. Instalar em /Applications e configurar LaunchAgent (Início Automático)
+# ---------------------------------------------------------
+INSTALL_APP_PATH="/Applications/${APP_BUNDLE}"
+echo "3. Instalando ${APP_BUNDLE} em /Applications..."
 killall "${APP_NAME}" 2>/dev/null || true
 sleep 0.3
-open "${APP_BUNDLE}"
-echo "🚀 ${APP_NAME} está rodando!"
+
+rm -rf "${INSTALL_APP_PATH}"
+cp -R "${APP_BUNDLE}" "${INSTALL_APP_PATH}"
+xattr -cr "${INSTALL_APP_PATH}"
+codesign --force --deep --sign - -r="designated => identifier \"com.dansorrel.MenuTogether\"" "${INSTALL_APP_PATH}"
+
+LAUNCH_AGENTS_DIR="${HOME}/Library/LaunchAgents"
+LAUNCH_AGENT_PLIST="${LAUNCH_AGENTS_DIR}/com.dansorrel.MenuTogether.plist"
+mkdir -p "${LAUNCH_AGENTS_DIR}"
+
+cat > "${LAUNCH_AGENT_PLIST}" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeepAlive</key>
+	<false/>
+	<key>Label</key>
+	<string>com.dansorrel.MenuTogether</string>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Applications/MenuTogether.app/Contents/MacOS/MenuTogether</string>
+		<string>--launched-at-login</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>
+EOF
+
+launchctl unload "${LAUNCH_AGENT_PLIST}" 2>/dev/null || true
+launchctl load -w "${LAUNCH_AGENT_PLIST}" 2>/dev/null || open "${INSTALL_APP_PATH}"
+
+echo "✅ Instalado em ${INSTALL_APP_PATH}"
+echo "✅ Inicialização automática configurada em ${LAUNCH_AGENT_PLIST}"
+echo "🚀 ${APP_NAME} está rodando a partir de /Applications!"

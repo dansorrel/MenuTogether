@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var permissionTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        LaunchAtLoginManager.syncWithSettings()
         setupStatusBar()
         setupGlobalHotKey()
         checkAccessibilityPermissions()
@@ -99,6 +100,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
+        let loginItem = NSMenuItem(
+            title: "Iniciar Automaticamente com o Mac",
+            action: #selector(toggleLaunchAtLogin),
+            keyEquivalent: ""
+        )
+        loginItem.target = self
+        loginItem.state = LaunchAtLoginManager.isEnabled ? .on : .off
+        menu.addItem(loginItem)
+
         let settingsItem = NSMenuItem(
             title: "Configurações e Ajustes Finos…",
             action: #selector(openSettingsWindow),
@@ -129,8 +139,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func checkAccessibilityPermissions() {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        let trusted = AXIsProcessTrustedWithOptions(options)
+        let isLaunchedAtLogin = CommandLine.arguments.contains("--launched-at-login")
+        let trusted: Bool
+        if isLaunchedAtLogin {
+            // Silently check at boot without showing system authorization dialogs
+            trusted = AXIsProcessTrusted()
+        } else {
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            trusted = AXIsProcessTrustedWithOptions(options)
+        }
 
         if trusted {
             startTracking()
@@ -181,6 +198,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let screenID = sender.representedObject as? String else { return }
         let currentlyEnabled = AppSettings.shared.isMonitorEnabled(screenID)
         AppSettings.shared.setMonitor(screenID, enabled: !currentlyEnabled)
+        rebuildStatusMenu()
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        LaunchAtLoginManager.isEnabled.toggle()
         rebuildStatusMenu()
     }
 

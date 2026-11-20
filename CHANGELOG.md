@@ -5,6 +5,7 @@ Todas as mudanças notáveis neste projeto são documentadas neste arquivo.
 ## [1.2.0] - 2026-11-20
 
 ### Adicionado
+- **Instalação em `/Applications` e Inicialização Automática Silenciosa**: Instalado diretamente em `/Applications/MenuTogether.app` com `LaunchAgent` (`~/Library/LaunchAgents/com.dansorrel.MenuTogether.plist`) configurado com `--launched-at-login` e assinatura por identificador estável (`designated => identifier "com.dansorrel.MenuTogether"`), iniciando junto com o Mac sem exibir pop-ups de autorização.
 - **Ícone Nativo Personalizado (`AppIcon.icns`)**: Gerador vetorial em CoreGraphics (`scripts/generate_icon.swift`) criando ícone de alta resolução para o app e para o painel de preferências.
 - **Seleção Inteligente Multi-Monitor**: Detecção automática do tamanho físico (em polegadas via `CGDisplayScreenSize`) e resolução de cada monitor conectado, permitindo escolher em quais monitores o menu acoplado aparece (desativando automaticamente monitores `< 18"` por padrão).
 - **Atalho Global de Teclado (`⌃⌥⌘M`)**: Alternância imediata entre ativo e pausado de qualquer lugar do macOS via Carbon `RegisterEventHotKey`.

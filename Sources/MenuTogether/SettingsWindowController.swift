@@ -33,6 +33,7 @@ final class SettingsWindowController: NSWindowController {
 
 struct SettingsView: View {
     @State private var isEnabled: Bool = AppSettings.shared.isEnabled
+    @State private var launchAtLogin: Bool = LaunchAtLoginManager.isEnabled
     @State private var maxScreenPercentage: Double = AppSettings.shared.maxScreenPercentage
     @State private var verticalGap: Double = AppSettings.shared.verticalGap
     @State private var horizontalOffset: Double = AppSettings.shared.horizontalOffset
@@ -74,6 +75,11 @@ struct SettingsView: View {
                 .font(.headline)
                 .onChange(of: isEnabled) { newValue in
                     AppSettings.shared.isEnabled = newValue
+                }
+
+            Toggle("Iniciar automaticamente ao ligar o Mac (sem pedir confirmação)", isOn: $launchAtLogin)
+                .onChange(of: launchAtLogin) { newValue in
+                    LaunchAtLoginManager.isEnabled = newValue
                 }
 
             GroupBox(label: Text("Monitores Ativos").font(.subheadline.bold())) {
@@ -191,6 +197,7 @@ struct SettingsView: View {
         .frame(width: 520)
         .onReceive(NotificationCenter.default.publisher(for: AppSettings.settingsChangedNotification)) { _ in
             isEnabled = AppSettings.shared.isEnabled
+            launchAtLogin = LaunchAtLoginManager.isEnabled
             maxScreenPercentage = AppSettings.shared.maxScreenPercentage
             verticalGap = AppSettings.shared.verticalGap
             horizontalOffset = AppSettings.shared.horizontalOffset

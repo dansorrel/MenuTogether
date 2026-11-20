@@ -47,6 +47,7 @@ MenuTogether/
 ├── Sources/MenuTogether/
 │   ├── main.swift                       # AppDelegate, Menu da Barra de Status e ciclo de vida
 │   ├── AppSettings.swift                # Persistência, detecção física de monitores (polegadas) e sincronização
+│   ├── LaunchAtLoginManager.swift       # Inicialização silenciosa com o macOS via LaunchAgent
 │   ├── AXHelper.swift                   # Leitura de menus via Accessibility API e cálculo de limites de tela
 │   ├── AttachedMenuPanel.swift          # NSPanel flutuante não-ativador com NSVisualEffectView
 │   ├── WindowTracker.swift              # Rastreamento em tempo real (AXObserver + sincronização de movimento)
@@ -77,9 +78,10 @@ MenuTogether/
 
 2. O script `build_app.sh` irá automaticamente:
    - Gerar os ícones (`Assets/AppIcon.icns`) caso ainda não existam;
-   - Compilar o binário otimizado em modo **Release** e empacotar o `MenuTogether.app`;
+   - Compilar o binário otimizado em modo **Release** e instalar o **`/Applications/MenuTogether.app`** na sua pasta de Aplicativos;
+   - Configurar o `LaunchAgent` em `~/Library/LaunchAgents/com.dansorrel.MenuTogether.plist` para iniciar automaticamente e silenciosamente ao ligar o Mac;
    - Compilar e instalar o painel **`MenuTogether.prefPane`** em `~/Library/PreferencePanes/`;
-   - Assinar digitalmente (`codesign` ad-hoc) os pacotes e iniciar o `MenuTogether.app`.
+   - Assinar digitalmente (`codesign` com requisito por identificador estável) os pacotes e iniciar o aplicativo.
 
 3. **Permissão de Acessibilidade**:
    - Na primeira abertura, conceda permissão ao **MenuTogether** em:
