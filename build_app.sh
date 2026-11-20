@@ -174,6 +174,7 @@ cat > "${LAUNCH_AGENT_PLIST}" <<EOF
 </plist>
 EOF
 
+tccutil reset Accessibility com.dansorrel.MenuTogether 2>/dev/null || true
 launchctl unload "${LAUNCH_AGENT_PLIST}" 2>/dev/null || true
 launchctl load -w "${LAUNCH_AGENT_PLIST}" 2>/dev/null || open "${INSTALL_APP_PATH}"
 

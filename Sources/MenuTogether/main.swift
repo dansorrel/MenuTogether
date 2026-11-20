@@ -35,10 +35,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func updateStatusBarIcon() {
         guard let button = statusItem.button else { return }
+        let trusted = AXIsProcessTrusted()
         let isEnabled = AppSettings.shared.isEnabled
-        let symbolName = isEnabled ? "menubar.rectangle" : "menubar.arrow.up.rectangle"
+        let symbolName: String
+        if !trusted {
+            symbolName = "exclamationmark.triangle.fill"
+        } else {
+            symbolName = isEnabled ? "menubar.rectangle" : "menubar.arrow.up.rectangle"
+        }
         button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "MenuTogether")
-        button.alphaValue = isEnabled ? 1.0 : 0.45
+        button.alphaValue = (trusted && isEnabled) ? 1.0 : 0.65
     }
 
     private func rebuildStatusMenu() {
@@ -139,19 +145,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func checkAccessibilityPermissions() {
-        let isLaunchedAtLogin = CommandLine.arguments.contains("--launched-at-login")
-        let trusted: Bool
-        if isLaunchedAtLogin {
-            // Silently check at boot without showing system authorization dialogs
-            trusted = AXIsProcessTrusted()
-        } else {
-            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-            trusted = AXIsProcessTrustedWithOptions(options)
-        }
+        let trusted = AXIsProcessTrusted()
 
         if trusted {
             startTracking()
         } else {
+            // Prompt only once when not trusted yet
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            _ = AXIsProcessTrustedWithOptions(options)
+
             permissionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
                 if AXIsProcessTrusted() {
                     timer.invalidate()

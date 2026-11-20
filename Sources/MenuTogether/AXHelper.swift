@@ -128,12 +128,13 @@ enum AXHelper {
             let visibleArea = visibleWidth * visibleHeight
             let windowArea = axFrame.width * axFrame.height
 
-            // 1. Check if window area, width, or height exceeds the configured screen percentage (e.g. > 80%)
+            // 1. Check if window area exceeds the configured screen percentage (e.g. > 80% of the screen area)
             let areaRatio = windowArea / max(visibleArea, 1)
-            let heightRatio = axFrame.height / max(visibleHeight, 1)
             let widthRatio = axFrame.width / max(visibleWidth, 1)
+            let heightRatio = axFrame.height / max(visibleHeight, 1)
 
-            if areaRatio > ratioLimit || heightRatio > ratioLimit || widthRatio > 0.92 {
+            // Hide if total window area exceeds maxPercentage (e.g. 80%), or if both width and height are practically maximized (> 92%)
+            if areaRatio > ratioLimit || (widthRatio > 0.92 && heightRatio > 0.92) {
                 return true
             }
 
